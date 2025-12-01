@@ -1,106 +1,60 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import type StudentInterface from '@/types/StudentInterface';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import styles from './AddStudent.module.scss';
+import type GroupInterface from '@/types/GroupInterface';
 
-export interface StudentFormData {
-  name: string;
-  email: string;
-  age: number;
-  course: string;
+export type FormFields = Pick<StudentInterface, 'firstName' | 'lastName' | 'middleName' | 'groupId'>;
+
+interface Props {
+  onAdd: (studentForm: FormFields) => void;
+  groups: GroupInterface[];
 }
 
-interface AddStudentProps {
-  onSubmit: (data: StudentFormData) => void;
-  loading: boolean;
-}
-
-const AddStudent: React.FC<AddStudentProps> = ({ onSubmit, loading }) => {
+const AddStudent = ({ onAdd, groups }: Props): React.ReactElement => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
-  } = useForm<StudentFormData>();
+  } = useForm<FormFields>();
 
-  const handleFormSubmit = (data: StudentFormData) => {
-    onSubmit(data);
-    reset();
-  };
+  const onSubmit: SubmitHandler<FormFields> = studentForm => onAdd(studentForm);
 
   return (
-    <div className="add-student-form">
-      <h3>Добавить нового студента</h3>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <div className="form-group">
-          <label htmlFor="name">Имя:</label>
-          <input
-            id="name"
-            type="text"
-            {...register('name', {
-              required: 'Имя обязательно для заполнения',
-              minLength: {
-                value: 2,
-                message: 'Имя должно содержать минимум 2 символа'
-              }
-            })}
-          />
-          {errors.name && <span className="error">{errors.name.message}</span>}
-        </div>
+    <div className={styles.AddStudent}>
+      <h2>Добавления студента</h2>
 
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
-            id="email"
-            type="email"
-            {...register('email', {
-              required: 'Email обязателен для заполнения',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Некорректный формат email'
-              }
-            })}
-          />
-          {errors.email && <span className="error">{errors.email.message}</span>}
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)}>
 
-        <div className="form-group">
-          <label htmlFor="age">Возраст:</label>
-          <input
-            id="age"
-            type="number"
-            {...register('age', {
-              required: 'Возраст обязателен для заполнения',
-              min: {
-                value: 16,
-                message: 'Возраст должен быть не менее 16 лет'
-              },
-              max: {
-                value: 100,
-                message: 'Возраст должен быть не более 100 лет'
-              },
-              valueAsNumber: true
-            })}
-          />
-          {errors.age && <span className="error">{errors.age.message}</span>}
-        </div>
+        <input
+          placeholder="Фамилия"
+          {...register('lastName', { required: true })}
+        />
+        {errors.lastName && <div>Обязательное поле</div>}
 
-        <div className="form-group">
-          <label htmlFor="course">Курс:</label>
-          <input
-            id="course"
-            type="text"
-            {...register('course', {
-              required: 'Курс обязателен для заполнения'
-            })}
-          />
-          {errors.course && <span className="error">{errors.course.message}</span>}
-        </div>
+        <input
+          placeholder="Имя"
+          {...register('firstName', { required: true })}
+        />
+        {errors.firstName && <div>Обязательное поле</div>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Добавление...' : 'Добавить студента'}
-        </button>
+        <input
+          placeholder="Отчество"
+          {...register('middleName', { required: true })}
+        />
+        {errors.middleName && <div>Обязательное поле</div>}
+
+        <select id="mySelect" {...register('groupId', { required: true })}>
+          <option value="">--Выберите группу--</option>
+          {groups.map(group => (
+            <option value={group.id} key={group.id}>{group.name}</option>
+          ))}
+        </select>
+
+        <input type="submit" value="Добавить" />
       </form>
+
     </div>
   );
 };
 
-export default AddStudent; 
+export default AddStudent;
